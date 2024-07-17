@@ -526,7 +526,7 @@ function solve(integrator::TimeIntegrator, solver::Solver, model::Model)
         end
         if norm_residual < norm_ref * 2
             norm_ref = norm_residual
-            solver.step.step_length[1] = solver.step.step_length[1] * 2
+            solver.step.step_length[1] = solver.step.step_length[1] * 1.1
             println("new step length=", solver.step.step_length[1])
         end
         update_solver_convergence_criterion(solver, norm_residual)
