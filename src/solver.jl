@@ -110,27 +110,27 @@ end
 
 function NewtonStep(params::Dict{Any,Any})
     if haskey(params, "step length") == true
-        step_length = params["step length"]
+        step_length = [params["step length"]]
     else
-        step_length = 1.0
+        step_length = [1.0]
     end
     NewtonStep(step_length)
 end
 
 function ExplicitStep(params::Dict{Any,Any})
     if haskey(params, "step length") == true
-        step_length = params["step length"]
+        step_length = [params["step length"]]
     else
-        step_length = 1.0
+        step_length = [1.0]
     end
     ExplicitStep(step_length)
 end
 
 function SteepestDescentStep(params::Dict{Any,Any})
     if haskey(params, "step length") == true
-        step_length = params["step length"]
+        step_length = [params["step length"]]
     else
-        step_length = 1.0
+        step_length = [1.0]
     end
     SteepestDescentStep(step_length)
 end
@@ -366,7 +366,7 @@ function backtrack_line_search(
     resid = solver.gradient
     merit = 0.5 * dot(resid, resid)
     merit_prime = -2.0 * merit
-    step_length = solver.step.step_length
+    step_length = solver.step.step_length[1]
     step = step_length * direction
     initial_solution = 1.0 * solver.solution
     max_ls_iters = 20
@@ -507,6 +507,8 @@ function solve(integrator::TimeIntegrator, solver::Solver, model::Model)
     residual = solver.gradient
     norm_residual = norm(residual[model.free_dofs])
     solver.initial_norm = norm_residual
+    println("|R|(initial)=", norm_residual)
+    norm_ref = norm_residual
     iteration_number = 0
     solver.failed = solver.failed || model.failed
     step_type = solver.step
@@ -521,6 +523,11 @@ function solve(integrator::TimeIntegrator, solver::Solver, model::Model)
             println("|R|=", norm_residual)
         else
             println("|R|=", norm_residual, ", solver iteration=", iteration_number)
+        end
+        if norm_residual < norm_ref * 2
+            norm_ref = norm_residual
+            solver.step.step_length[1] = solver.step.step_length[1] * 2
+            println("new step length=", solver.step.step_length[1])
         end
         update_solver_convergence_criterion(solver, norm_residual)
         iteration_number += 1

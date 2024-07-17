@@ -49,13 +49,13 @@ mutable struct SteepestDescent <: Solver
 end
 
 struct NewtonStep <: Step
-    step_length::Float64
+    step_length::Vector{Float64}
 end
 
 struct ExplicitStep <: Step
-    step_length::Float64
+    step_length::Vector{Float64}
 end
 
 struct SteepestDescentStep <: Step
-    step_length::Float64
+    step_length::Vector{Float64}
 end
