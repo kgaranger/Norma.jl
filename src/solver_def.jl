@@ -16,6 +16,7 @@ mutable struct HessianMinimizer <: Minimizer
     hessian::SparseMatrixCSC{Float64,Int64}
     solution::Vector{Float64}
     initial_norm::Float64
+    norm_reference::Float64
     converged::Bool
     failed::Bool
     step::Step
@@ -27,6 +28,7 @@ mutable struct ExplicitSolver <: Solver
     lumped_hessian::Vector{Float64}
     solution::Vector{Float64}
     initial_norm::Float64
+    norm_reference::Float64
     converged::Bool
     failed::Bool
     step::Step
@@ -43,6 +45,7 @@ mutable struct SteepestDescent <: Solver
     gradient::Vector{Float64}
     solution::Vector{Float64}
     initial_norm::Float64
+    norm_reference::Float64
     converged::Bool
     failed::Bool
     step::Step

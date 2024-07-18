@@ -27,6 +27,7 @@ function HessianMinimizer(params::Dict{Any,Any})
     hessian = spzeros(num_dof, num_dof)
     solution = zeros(num_dof)
     initial_norm = 0.0
+    norm_reference = 0.0
     converged = false
     failed = false
     step = create_step(solver_params)
@@ -42,6 +43,7 @@ function HessianMinimizer(params::Dict{Any,Any})
         hessian,
         solution,
         initial_norm,
+        norm_reference,
         converged,
         failed,
         step,
@@ -58,6 +60,7 @@ function ExplicitSolver(params::Dict{Any,Any})
     solution = zeros(num_dof)
     initial_guess = zeros(num_dof)
     initial_norm = 0.0
+    norm_reference = 0.0
     converged = false
     failed = false
     step = create_step(solver_params)
@@ -67,6 +70,7 @@ function ExplicitSolver(params::Dict{Any,Any})
         solution,
         initial_guess,
         initial_norm,
+        norm_reference,
         converged,
         failed,
         step,
@@ -88,6 +92,7 @@ function SteepestDescent(params::Dict{Any,Any})
     gradient = zeros(num_dof)
     solution = zeros(num_dof)
     initial_norm = 0.0
+    norm_reference = 0.0
     converged = false
     failed = false
     step = create_step(solver_params)
@@ -102,6 +107,7 @@ function SteepestDescent(params::Dict{Any,Any})
         gradient,
         solution,
         initial_norm,
+        norm_reference,
         converged,
         failed,
         step,
@@ -507,8 +513,8 @@ function solve(integrator::TimeIntegrator, solver::Solver, model::Model)
     residual = solver.gradient
     norm_residual = norm(residual[model.free_dofs])
     solver.initial_norm = norm_residual
-    println("|R|(initial)=", norm_residual)
-    norm_ref = norm_residual
+    solver.norm_reference = max(solver.norm_reference, solver.initial_norm)
+    println("|R|=", norm_residual)
     iteration_number = 0
     solver.failed = solver.failed || model.failed
     step_type = solver.step
@@ -519,14 +525,10 @@ function solve(integrator::TimeIntegrator, solver::Solver, model::Model)
         evaluate(integrator, solver, model)
         residual = solver.gradient
         norm_residual = norm(residual[model.free_dofs])
-        if iteration_number == 0
-            println("|R|=", norm_residual)
-        else
-            println("|R|=", norm_residual, ", solver iteration=", iteration_number)
-        end
-        if norm_residual < norm_ref * 2
-            norm_ref = norm_residual
-            solver.step.step_length[1] = solver.step.step_length[1] * 1.1
+        println("|R|=", norm_residual, ", solver iteration=", iteration_number+1)
+        if 2 * norm_residual < solver.norm_reference
+            solver.norm_reference = norm_residual
+            solver.step.step_length[1] = solver.step.step_length[1] * 2
             println("new step length=", solver.step.step_length[1])
         end
         update_solver_convergence_criterion(solver, norm_residual)
