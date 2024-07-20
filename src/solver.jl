@@ -526,9 +526,9 @@ function solve(integrator::TimeIntegrator, solver::Solver, model::Model)
         residual = solver.gradient
         norm_residual = norm(residual[model.free_dofs])
         println("|R|=", norm_residual, ", solver iteration=", iteration_number+1)
-        if 4 * norm_residual < solver.norm_reference
+        if 2 * norm_residual < solver.norm_reference
             solver.norm_reference = norm_residual
-            solver.step.step_length[1] = solver.step.step_length[1] * 2
+            solver.step.step_length[1] = solver.step.step_length[1] * 1.5
             println("new step length=", solver.step.step_length[1])
         end
         update_solver_convergence_criterion(solver, norm_residual)
