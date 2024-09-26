@@ -340,16 +340,16 @@ function evaluate(_::QuasiStatic, model::SolidMechanics)
                 dNdξₚ = dNdξ[:, :, point]
                 dXdξ = dNdξₚ * elem_ref_pos'
                 dxdξ = dNdξₚ * elem_cur_pos'
+                if det(dxdξ) ≤ 0.0
+                    model.failed = true
+                    @warn "evaluation of model has failed with a non-positive Jacobian"
+                    return 0.0, zeros(num_dof), zeros(num_dof), spzeros(num_dof, num_dof)
+                end
                 dxdX = dXdξ \ dxdξ
                 dNdX = dXdξ \ dNdξₚ
                 B = gradient_operator(dNdX)
                 j = det(dXdξ)
                 J = det(dxdX)
-                if J ≤ 0.0
-                    model.failed = true
-                    @warn "evaluation of model has failed with a non-positive Jacobian"
-                    return 0.0, zeros(num_dof), zeros(num_dof), spzeros(num_dof, num_dof)
-                end
                 F = dxdX
                 W, P, A = constitutive(material, F)
                 stress = P[1:9]
@@ -423,12 +423,7 @@ function evaluate(integrator::Newmark, model::SolidMechanics)
                 dNdξₚ = dNdξ[:, :, point]
                 dXdξ = dNdξₚ * elem_ref_pos'
                 dxdξ = dNdξₚ * elem_cur_pos'
-                dxdX = dXdξ \ dxdξ
-                dNdX = dXdξ \ dNdξₚ
-                B = gradient_operator(dNdX)
-                j = det(dXdξ)
-                J = det(dxdX)
-                if J ≤ 0.0
+                if det(dxdξ) ≤ 0.0
                     model.failed = true
                     @warn "evaluation of model has failed with a non-positive Jacobian"
                     return 0.0,
@@ -437,6 +432,11 @@ function evaluate(integrator::Newmark, model::SolidMechanics)
                     spzeros(num_dof, num_dof),
                     spzeros(num_dof, num_dof)
                 end
+                dxdX = dXdξ \ dxdξ
+                dNdX = dXdξ \ dNdξₚ
+                B = gradient_operator(dNdX)
+                j = det(dXdξ)
+                J = det(dxdX)
                 F = dxdX
                 W, P, A = constitutive(material, F)
                 stress = P[1:9]
@@ -469,7 +469,7 @@ function evaluate(integrator::Newmark, model::SolidMechanics)
     stiffness_matrix = sparse(rows, cols, stiffness)
     mass_matrix = sparse(rows, cols, mass)
     if mesh_smoothing == true
-        internal_force -= 1.0e+00 * integrator.velocity
+        internal_force -= integrator.velocity
     end
     model.internal_force = internal_force
     return energy, internal_force, body_force, stiffness_matrix, mass_matrix
@@ -554,7 +554,7 @@ function set_time_step(integrator::CentralDifference, model::SolidMechanics)
     integrator.time_step = min(stable_time_step, integrator.user_time_step)
 end
 
-function evaluate(integrator::CentralDifference, model::SolidMechanics)
+function evaluate(_::CentralDifference, model::SolidMechanics)
     materials = model.materials
     input_mesh = model.mesh
     mesh_smoothing = model.mesh_smoothing
@@ -601,16 +601,16 @@ function evaluate(integrator::CentralDifference, model::SolidMechanics)
                 dNdξₚ = dNdξ[:, :, point]
                 dXdξ = dNdξₚ * elem_ref_pos'
                 dxdξ = dNdξₚ * elem_cur_pos'
+                if det(dxdξ) ≤ 0.0
+                    model.failed = true
+                    @warn "evaluation of model has failed with a non-positive Jacobian"
+                    return 0.0, zeros(num_dof), zeros(num_dof), zeros(num_dof)
+                end
                 dxdX = dXdξ \ dxdξ
                 dNdX = dXdξ \ dNdξₚ
                 B = gradient_operator(dNdX)
                 j = det(dXdξ)
                 J = det(dxdX)
-                if J ≤ 0.0
-                    model.failed = true
-                    @warn "evaluation of model has failed with a non-positive Jacobian"
-                    return 0.0, zeros(num_dof), zeros(num_dof), zeros(num_dof)
-                end
                 F = dxdX
                 W, P, _ = constitutive(material, F)
                 stress = P[1:9]
