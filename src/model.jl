@@ -197,6 +197,7 @@ end
 
 function create_smooth_reference(smooth_reference::String, element_type::String, elem_ref_pos::Matrix{Float64})
     if element_type == "TETRA4" || element_type == "TETRA"
+        x_avg = mean(elem_ref_pos[1, :])
         u = elem_ref_pos[:, 2] - elem_ref_pos[:, 1]
         v = elem_ref_pos[:, 3] - elem_ref_pos[:, 1]
         w = elem_ref_pos[:, 4] - elem_ref_pos[:, 1]
@@ -210,6 +211,7 @@ function create_smooth_reference(smooth_reference::String, element_type::String,
         else
             error("Unknown type of mesh smoothing reference : ", smooth_reference)
         end
+        h = h * abs(x_avg)
 
         c = h * 0.5 / sqrt(2.0)
         A = [
