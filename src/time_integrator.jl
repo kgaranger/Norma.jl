@@ -341,6 +341,8 @@ function initialize(integrator::QuasiStatic, solver::Solver, model::SolidMechani
         if model.failed == true
             norma_abort("Finite element model failed to establish initial equlibrium")
         end
+    else
+        evaluate(integrator, solver, model)
     end
     return nothing
 end
