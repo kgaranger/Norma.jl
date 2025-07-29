@@ -178,6 +178,8 @@ function initialize(integrator::QuasiStatic, solver::Any, model::SolidMechanics)
     if integrator.initial_equilibrium == true
         println("Establishing initial equilibrium")
         solve(integrator, solver, model)
+    else
+        evaluate(integrator, solver, model)
     end
 end
 
