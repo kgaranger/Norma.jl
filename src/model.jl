@@ -279,6 +279,34 @@ function create_smooth_reference(smooth_reference::String, element_type::Element
             1 1 -1 -1
         ]
         return c * A
+    elif element_type == HEX8
+        a = elem_ref_pos[:, 2] - elem_ref_pos[:, 1]
+        b = elem_ref_pos[:, 3] - elem_ref_pos[:, 2]
+        c = elem_ref_pos[:, 4] - elem_ref_pos[:, 3]
+        d = elem_ref_pos[:, 1] - elem_ref_pos[:, 4]
+        e = elem_ref_pos[:, 5] - elem_ref_pos[:, 1]
+        f = elem_ref_pos[:, 6] - elem_ref_pos[:, 2]
+        g = elem_ref_pos[:, 7] - elem_ref_pos[:, 3]
+        h = elem_ref_pos[:, 8] - elem_ref_pos[:, 4]
+
+
+        if smooth_reference == "equal volume"
+            h = equal_volume_hex_h(a, b, c, d, e, f, g, h)
+        elseif smooth_reference == "average edge length"
+            h = avg_edge_length_hex_h(a, b, c, d, e, f, g, h)
+        else
+            error("Unknown type of mesh smoothing reference : ", smooth_reference)
+        end
+
+        c = h * 0.5
+        A = [
+             1 1 -1 -1 1 1 -1 -1
+             -1 1 1 -1 -1 1 1 -1
+             -1 -1 -1 -1 1 1 1 1
+        ]
+        return c * A
+        
+        
     else
         norma_abort("Unknown element type")
     end
@@ -293,6 +321,25 @@ function avg_edge_length_tet_h(u::Vector{Float64}, v::Vector{Float64}, w::Vector
     h = (norm(u) + norm(v) + norm(w) + norm(u - v) + norm(u - w) + norm(v - w)) / 6.0
     return h
 end
+
+function equal_volume_hex_h(a::Vector{Float64}, b::Vector{Float64}, c::Vector{Float64}, d::Vector{Float64},
+                            e::Vector{Float64}, f::Vector{Float64}, g::Vector{Float64}, h::Vector{Float64})
+    v1 = dot(a, cross(a+b, a+f)) / 6.0
+    v2 = dot(a+b, cross(-d, h-d)) / 6.0
+    v3 = dot(e, cross(a+f, h-d)) / 6.0
+    v4 = dot(-b+f, cross(g, -c+h)) / 6.0
+    v5 = dot(a+f, cross(a+b, h-d)) / 6.0
+    h = cbrt(v1 + v2 + v3 + v4 + v5)
+    return h
+end
+
+function avg_edge_length_hex_h(a::Vector{Float64}, b::Vector{Float64}, c::Vector{Float64}, d::Vector{Float64},
+                            e::Vector{Float64}, f::Vector{Float64}, g::Vector{Float64}, h::Vector{Float64})
+    h = (norm(a) + norm(b) + norm(c) + norm(d) + norm(e) + norm(f) + norm(g) + norm(h) +
+         norm(a+f-e) + norm(b+g-f) + norm(c+h-g) + norm(d+e-h)) / 12.0
+    return h
+end
+
 
 function characteristic_element_length_centroid(nodal_coordinates::Matrix{Float64})::Float64
     centroid = sum(nodal_coordinates; dims=2) / size(nodal_coordinates, 2)
