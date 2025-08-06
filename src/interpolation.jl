@@ -340,17 +340,17 @@ function lagrangianD3N8G8()
 end
 
 function default_num_int_pts(element_type::String)
-    if element_type == "BAR2"
+    if uppercase(element_type) == "BAR2"
         return 1
-    elseif element_type == "TRI3"
+    elseif uppercase(element_type) == "TRI3"
         return 3
-    elseif element_type == "QUAD4"
+    elseif uppercase(element_type) == "QUAD4"
         return 4
-    elseif element_type == "TETRA4" || element_type == "TETRA"
+    elseif uppercase(element_type) == "TETRA4" || uppercase(element_type) == "TETRA"
         return 4
-    elseif element_type == "TETRA10"
+    elseif uppercase(element_type) == "TETRA10"
         return 4
-    elseif element_type == "HEX8"
+    elseif uppercase(element_type) == "HEX8" || uppercase(element_type) == "HEX"
         return 8
     else
         error("Invalid element type: ", element_type)
@@ -382,7 +382,7 @@ end
 function isoparametric(element_type::String, num_int::Integer)
     msg1 = "Invalid number of integration points: "
     msg2 = " for element type: "
-    if element_type == "BAR2"
+    if uppercase(element_type) == "BAR2"
         if num_int == 1
             return lagrangianD1N2G1()
         elseif num_int == 2
@@ -390,7 +390,7 @@ function isoparametric(element_type::String, num_int::Integer)
         else
             error(msg1, num_int, msg2, element_type)
         end
-    elseif element_type == "TRI3"
+    elseif uppercase(element_type) == "TRI3"
         if num_int == 1
             return barycentricD2N3G1()
         elseif num_int == 3
@@ -398,7 +398,7 @@ function isoparametric(element_type::String, num_int::Integer)
         else
             error(msg1, num_int, msg2, element_type)
         end
-    elseif element_type == "QUAD4"
+    elseif uppercase(element_type) == "QUAD4"
         if num_int == 4
             return lagrangianD2N4G4()
         elseif num_int == 9
@@ -406,7 +406,7 @@ function isoparametric(element_type::String, num_int::Integer)
         else
             error(msg1, num_int, msg2, element_type)
         end
-    elseif element_type == "TETRA4" || element_type == "TETRA"
+    elseif uppercase(element_type) == "TETRA4" || uppercase(element_type) == "TETRA"
         if num_int == 1
             return barycentricD3N4G1()
         elseif num_int == 4
@@ -414,7 +414,7 @@ function isoparametric(element_type::String, num_int::Integer)
         else
             error(msg1, num_int, msg2, element_type)
         end
-    elseif element_type == "TETRA10"
+    elseif uppercase(element_type) == "TETRA10"
         if num_int == 4
             return barycentricD3N10G4()
         elseif num_int == 5
@@ -422,7 +422,7 @@ function isoparametric(element_type::String, num_int::Integer)
         else
             error(msg1, num_int, msg2, element_type)
         end
-    elseif element_type == "HEX8"
+    elseif uppercase(element_type) == "HEX8" || uppercase(element_type) == "HEX"
         if num_int == 8
             return lagrangianD3N8G8()
         else
@@ -542,17 +542,17 @@ function map_to_parametric(
 end
 
 function interpolate(element_type::String, ξ::Vector{Float64})
-    if element_type == "BAR2"
+    if uppercase(element_type) == "BAR2"
         return lagrangianD1N2(ξ)
-    elseif element_type == "TRI3"
+    elseif uppercase(element_type) == "TRI3"
         return barycentricD2N3(ξ)
-    elseif element_type == "QUAD4"
+    elseif uppercase(element_type) == "QUAD4"
         return lagrangianD2N4(ξ)
-    elseif element_type == "TETRA4" || element_type == "TETRA"
+    elseif uppercase(element_type) == "TETRA4" || uppercase(element_type) == "TETRA"
         return barycentricD3N4(ξ)
-    elseif element_type == "TETRA10"
+    elseif uppercase(element_type) == "TETRA10"
         return barycentricD3N10(ξ)
-    elseif element_type == "HEX8"
+    elseif uppercase(element_type) == "HEX8" || uppercase(element_type) == "HEX"
         return lagrangianD3N8(ξ)
     else
         error("Invalid element type: ", element_type)
@@ -561,15 +561,15 @@ end
 
 function is_inside_parametric(element_type::String, ξ::Vector{Float64}, tol::Float64 = 1.0e-06)
     factor = 1.0 + tol
-    if element_type == "BAR2"
+    if uppercase(element_type) == "BAR2"
         return -factor ≤ ξ ≤ factor
-    elseif element_type == "TRI3"
+    elseif uppercase(element_type) == "TRI3"
         return reduce(*, -tol * ones(2) .≤ ξ .≤ factor * ones(2))
-    elseif element_type == "QUAD4"
+    elseif uppercase(element_type) == "QUAD4"
         return reduce(*, -factor * ones(2) .≤ ξ .≤ factor * ones(2))
-    elseif element_type == "TETRA4" || element_type == "TETRA10" || element_type == "TETRA"
+    elseif uppercase(element_type) == "TETRA4" || uppercase(element_type) == "TETRA10" || uppercase(element_type) == "TETRA"
         return reduce(*, -tol * ones(3) .≤ ξ .≤ factor * ones(3))
-    elseif element_type == "HEX8"
+    elseif uppercase(element_type) == "HEX8" || uppercase(element_type) == "HEX"
         return reduce(*, -factor * ones(3) .≤ ξ .≤ factor * ones(3))
     else
         error("Invalid element type: ", element_type)
@@ -582,9 +582,9 @@ function is_inside(element_type::String, nodes::Matrix{Float64}, point::Vector{F
 end
 
 #function is_inside(element_type::String, nodes::Matrix{Float64}, point::Vector{Float64}, tol::Float64 = 1.0e-06)
-#    if element_type == "TETRA4" || element_type == "TETRA10" || element_type == "TETRA"
+#    if uppercase(element_type) == "TETRA4" || uppercase(element_type) == "TETRA10" || uppercase(element_type) == "TETRA"
 #        return is_point_in_tetrahedron(point, nodes[:,1], nodes[:,2], nodes[:,3], nodes[:,4], tol)
-#    elseif element_type == "HEX8"
+#    elseif uppercase(element_type) == "HEX8"
 #        return is_point_in_hexahedron(point, nodes[:,1], nodes[:,2], nodes[:,3], nodes[:,4], nodes[:,5], nodes[:,6], nodes[:,7], nodes[:,8], tol)
 #    else
 #        error("Invalid element type: ", element_type)
