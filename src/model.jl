@@ -265,9 +265,9 @@ function create_smooth_reference(smooth_reference::String, element_type::Element
         w = element_ref_pos[:, 4] - element_ref_pos[:, 1]
 
         if smooth_reference == "equal volume"
-            h = equal_volume_tet_h(u, v, w)
+            h = equal_volume_tetra4_h(u, v, w)
         elseif smooth_reference == "average edge length"
-            h = avg_edge_length_tet_h(u, v, w)
+            h = avg_edge_length_tetra4_h(u, v, w)
         else
             norma_abort("Unknown type of mesh smoothing reference : $smooth_reference")
         end
@@ -279,21 +279,21 @@ function create_smooth_reference(smooth_reference::String, element_type::Element
             1 1 -1 -1
         ]
         return c * A
-    elif element_type == HEX8
-        a = elem_ref_pos[:, 2] - elem_ref_pos[:, 1]
-        b = elem_ref_pos[:, 3] - elem_ref_pos[:, 2]
-        c = elem_ref_pos[:, 4] - elem_ref_pos[:, 3]
-        d = elem_ref_pos[:, 1] - elem_ref_pos[:, 4]
-        e = elem_ref_pos[:, 5] - elem_ref_pos[:, 1]
-        f = elem_ref_pos[:, 6] - elem_ref_pos[:, 2]
-        g = elem_ref_pos[:, 7] - elem_ref_pos[:, 3]
-        h = elem_ref_pos[:, 8] - elem_ref_pos[:, 4]
+    elseif element_type == HEX8
+        a = element_ref_pos[:, 2] - element_ref_pos[:, 1]
+        b = element_ref_pos[:, 3] - element_ref_pos[:, 2]
+        c = element_ref_pos[:, 4] - element_ref_pos[:, 3]
+        d = element_ref_pos[:, 1] - element_ref_pos[:, 4]
+        e = element_ref_pos[:, 5] - element_ref_pos[:, 1]
+        f = element_ref_pos[:, 6] - element_ref_pos[:, 2]
+        g = element_ref_pos[:, 7] - element_ref_pos[:, 3]
+        h = element_ref_pos[:, 8] - element_ref_pos[:, 4]
 
 
         if smooth_reference == "equal volume"
-            h = equal_volume_hex_h(a, b, c, d, e, f, g, h)
+            h = equal_volume_hex8_h(a, b, c, d, e, f, g, h)
         elseif smooth_reference == "average edge length"
-            h = avg_edge_length_hex_h(a, b, c, d, e, f, g, h)
+            h = avg_edge_length_hex8_h(a, b, c, d, e, f, g, h)
         else
             error("Unknown type of mesh smoothing reference : ", smooth_reference)
         end
@@ -312,32 +312,32 @@ function create_smooth_reference(smooth_reference::String, element_type::Element
     end
 end
 
-function equal_volume_tet_h(u::Vector{Float64}, v::Vector{Float64}, w::Vector{Float64})
-    h = cbrt(sqrt(2.0) * dot(u, cross(v, w)))
-    return h
+function equal_volume_tetra4_h(u::Vector{Float64}, v::Vector{Float64}, w::Vector{Float64})
+    tetra4_h = cbrt(sqrt(2.0) * dot(u, cross(v, w)))
+    return tetra4_h
 end
 
-function avg_edge_length_tet_h(u::Vector{Float64}, v::Vector{Float64}, w::Vector{Float64})
-    h = (norm(u) + norm(v) + norm(w) + norm(u - v) + norm(u - w) + norm(v - w)) / 6.0
-    return h
+function avg_edge_length_tetra4_h(u::Vector{Float64}, v::Vector{Float64}, w::Vector{Float64})
+    tetra4_h = (norm(u) + norm(v) + norm(w) + norm(u - v) + norm(u - w) + norm(v - w)) / 6.0
+    return tetra4_h
 end
 
-function equal_volume_hex_h(a::Vector{Float64}, b::Vector{Float64}, c::Vector{Float64}, d::Vector{Float64},
+function equal_volume_hex8_h(a::Vector{Float64}, b::Vector{Float64}, c::Vector{Float64}, d::Vector{Float64},
                             e::Vector{Float64}, f::Vector{Float64}, g::Vector{Float64}, h::Vector{Float64})
     v1 = dot(a, cross(a+b, a+f)) / 6.0
     v2 = dot(a+b, cross(-d, h-d)) / 6.0
     v3 = dot(e, cross(a+f, h-d)) / 6.0
-    v4 = dot(-b+f, cross(g, -c+h)) / 6.0
+    v4 = dot(-b+f, cross(g, c+h)) / 6.0
     v5 = dot(a+f, cross(a+b, h-d)) / 6.0
-    h = cbrt(v1 + v2 + v3 + v4 + v5)
-    return h
+    hex8_h = cbrt(v1 + v2 + v3 + v4 + v5)
+    return hex8_h
 end
 
-function avg_edge_length_hex_h(a::Vector{Float64}, b::Vector{Float64}, c::Vector{Float64}, d::Vector{Float64},
+function avg_edge_length_hex8_h(a::Vector{Float64}, b::Vector{Float64}, c::Vector{Float64}, d::Vector{Float64},
                             e::Vector{Float64}, f::Vector{Float64}, g::Vector{Float64}, h::Vector{Float64})
-    h = (norm(a) + norm(b) + norm(c) + norm(d) + norm(e) + norm(f) + norm(g) + norm(h) +
+    hex8_h = (norm(a) + norm(b) + norm(c) + norm(d) + norm(e) + norm(f) + norm(g) + norm(h) +
          norm(a+f-e) + norm(b+g-f) + norm(c+h-g) + norm(d+e-h)) / 12.0
-    return h
+    return hex8_h
 end
 
 
