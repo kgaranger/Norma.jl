@@ -257,17 +257,17 @@ function lagrangian(::Val{D}, ::Val{N}, ::Val{G}) where {D,N,G}
 end
 
 function element_type_from_string(s::AbstractString)::ElementType
-    if s == "BAR2" || s == "BAR"
+    if uppercase(s) == "BAR2" || uppercase(s) == "BAR"
         return BAR2
-    elseif s == "TRI3" || s == "TRI"
+    elseif uppercase(s) == "TRI3" || uppercase(s) == "TRI"
         return TRI3
-    elseif s == "QUAD4" || s == "QUAD"
+    elseif uppercase(s) == "QUAD4" || uppercase(s) == "QUAD"
         return QUAD4
-    elseif s == "TETRA4" || s == "TETRA"
+    elseif uppercase(s) == "TETRA4" || uppercase(s) == "TETRA"
         return TETRA4
-    elseif s == "TETRA10"
+    elseif uppercase(s) == "TETRA10"
         return TETRA10
-    elseif s == "HEX8" || s == "HEX"
+    elseif uppercase(s) == "HEX8" || uppercase(s) == "HEX"
         return HEX8
     else
         norma_abort("Unknown element type string: $s")
